@@ -1,0 +1,38 @@
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_PASSWORD=app_password
+  ngninx:
+    depends_on:
+      - api
+      - client
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - "3050:80"
+  api:
+    build: 
+      dockerfile: Dockerfile.dev
+      context: ./server
+    volumes:
+      - /app/node_module
+      - ./server:/app
+    environment:
+      - MYSQL_USER=user
+      - MYSQL_HOST=mysql
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=film
+      - MYSQL_PORT=3306
+  client:
+    stdin_open: true
+    environment:
+      - CHOKIDAR_USERPOLLING=true
+    build: 
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+      - /app/node_module
+      - ./client:/app
